@@ -2,7 +2,6 @@
 
 ```sql
 -- order of operations:
-/*
 FROM
 WHERE
 GROUP BY
@@ -11,7 +10,6 @@ SELECT
 DISTINCT
 ORDER BY
 LIMIT
-*/
 ```
 
 ## Section 1. Querying Data
@@ -1217,36 +1215,113 @@ CREATE TABLE invoices(
 ### Boolean – store TRUE and FALSE values with the Boolean data type.
 
 ```sql
-
+/*
+True	False
+true	false
+‘t’	‘f ‘
+‘true’	‘false’
+‘y’	‘n’
+‘yes’	‘no’
+‘1’	‘0’
+*/
+CREATE TABLE stock_availability (
+   product_id INT PRIMARY KEY,
+   available BOOLEAN NOT NULL -- BOOL also works
+);
 ```
 
 ### CHAR, VARCHAR and TEXT – learn how to use various character types including CHAR, VARCHAR, and TEXT.
 
 ```sql
-
+/*
+CHARACTER VARYING(n), VARCHAR(n)	variable-length with length limit
+CHARACTER(n), CHAR(n)	            fixed-length, blank padded
+TEXT, VARCHAR	                    variable unlimited length
+*/
+CREATE TABLE character_tests (
+	id serial PRIMARY KEY,
+	x CHAR (1),
+	y VARCHAR (10),
+	z TEXT
+);
 ```
 
 ### NUMERIC – show you how to use NUMERIC type to store values that precision is required.
 
 ```sql
-
+-- NUMERIC(precision, scale)
+CREATE TABLE products (
+    id SERIAL PRIMARY KEY,
+    name VARCHAR(100) NOT NULL,
+    price NUMERIC(5,2)
+);
 ```
 
 ### Integer – introduce you various integer types in PostgreSQL including SMALLINT, INT and BIGINT.
 
 ```sql
-
+/*
+[-2**(bits - 1), 2**(bits - 1) - 1]
+SMALLINT	2 bytes	-32,768	                    +32,767
+INTEGER	    4 bytes	-2,147,483,648	            +2,147,483,647
+BIGINT	    8 bytes	-9,223,372,036,854,775,808	+9,223,372,036,854,775,807
+*/
+CREATE TABLE books (
+    book_id SERIAL PRIMARY KEY,
+    title VARCHAR (255) NOT NULL,
+    pages SMALLINT NOT NULL CHECK (pages > 0)
+);
 ```
 
 ### DATE – introduce the DATE data type for storing date values.
 
 ```sql
-
+-- yyyy-mm-dd
+CREATE TABLE documents (
+	document_id serial PRIMARY KEY,
+	header_text VARCHAR (255) NOT NULL,
+	posting_date DATE NOT NULL DEFAULT CURRENT_DATE
+);
+INSERT INTO documents (header_text)
+VALUES('Billing to customer XYZ'); -- auto dated
+INSERT INTO employees (first_name, last_name, birth_date, hire_date)
+VALUES ('Shannon','Freeman','1980-01-01','2005-01-01');
+SELECT TO_CHAR(NOW() :: DATE, 'dd/mm/yyyy'); -- :: is casting operator
+SELECT
+	first_name,
+	last_name,
+	now() - hire_date as diff
+FROM
+	employees;
+SELECT
+	employee_id,
+	first_name,
+	last_name,
+	AGE(birth_date) -- calculates ages
+FROM
+	employees;
+SELECT
+	employee_id,
+	first_name,
+	last_name,
+	EXTRACT (YEAR FROM birth_date) AS YEAR,
+	EXTRACT (MONTH FROM birth_date) AS MONTH,
+	EXTRACT (DAY FROM birth_date) AS DAY
+FROM
+	employees;
 ```
 
 ### Timestamp – understand timestamp data types quickly.
 
 ```sql
+-- timestamp: a timestamp without timezone.
+-- timestamptz: timestamp with a timezone
+-- timestamtz updates time based on set timezone, timestamp doesnt
+SET timezone = 'America/New_York';
+INSERT INTO timestamp_demo (ts, tstz)
+VALUES('2016-06-22 19:10:25-07','2016-06-22 19:10:25-07'); -- same
+SELECT timezone('America/New_York','2016-06-01 00:00'::timestamptz);
+-- converts 2016-06-01 00:00 to America/New_York
 
 ```
 
