@@ -1126,3 +1126,246 @@ FROM
 WHERE
     condition;
 ```
+
+## Section 13. Understanding PostgreSQL Constraints
+
+### Primary key – illustrate how to define a primary key when creating a table or add a primary key to an existing table.
+
+```sql
+-- a primary key constraint is the combination of a not-null constraint
+-- and a UNIQUE constraint.
+CREATE TABLE po_items (
+	po_no INTEGER,
+	item_no INTEGER,
+	product_no INTEGER,
+	PRIMARY KEY (po_no, item_no)
+);
+ALTER TABLE vendors ADD COLUMN id SERIAL PRIMARY KEY; -- just works ;)
+```
+
+### Foreign key – show you how to define foreign key constraints when creating a new table or add foreign key constraints for existing tables.
+
+```sql
+CREATE TABLE customers(
+   customer_id INT GENERATED ALWAYS AS IDENTITY,
+   customer_name VARCHAR(255) NOT NULL,
+   PRIMARY KEY(customer_id)
+);
+
+CREATE TABLE contacts(
+   contact_id INT GENERATED ALWAYS AS IDENTITY,
+   customer_id INT,
+   contact_name VARCHAR(255) NOT NULL,
+   phone VARCHAR(15),
+   email VARCHAR(100),
+   PRIMARY KEY(contact_id),
+   CONSTRAINT fk_customer
+      FOREIGN KEY (customer_id)
+	  REFERENCES customers(customer_id)
+	  ON DELETE CASCADE -- ON DELETE CASCADE automatically deletes all
+      -- the referencing rows in the child table when the referenced
+      -- rows in the parent table are deleted
+);
+```
+
+### CHECK constraint – add logic to check value based on a Boolean expression.
+
+```sql
+DROP TABLE IF EXISTS employees;
+CREATE TABLE employees (
+	id SERIAL PRIMARY KEY,
+	first_name VARCHAR (50),
+	last_name VARCHAR (50),
+	birth_date DATE CHECK (birth_date > '1900-01-01'),
+	joined_date DATE CHECK (joined_date > birth_date),
+	salary numeric CHECK(salary > 0)
+);
+```
+
+### UNIQUE constraint – make sure that values in a column or a group of columns unique across the table.
+
+```sql
+CREATE TABLE person (
+	id SERIAL PRIMARY KEY,
+	first_name VARCHAR (50),
+	last_name VARCHAR (50),
+	email VARCHAR (50) UNIQUE
+);
+CREATE TABLE table (
+    c1 data_type,
+    c2 data_type,
+    c3 data_type,
+    UNIQUE (c2, c3)
+);
+```
+
+### NOT NULL constraint – ensure values in a column are not NULL.
+
+```sql
+SELECT NULL IS NULL; -- t
+CREATE TABLE invoices(
+  id SERIAL PRIMARY KEY,
+  product_id INT NOT NULL,
+  qty numeric NOT NULL CHECK(qty > 0),
+  net_price numeric CHECK(net_price > 0)
+);
+-- NOT NULL is equi. to CHECK (column IS NOT NULL)
+```
+
+## Section 14. PostgreSQL Data Types in Depth
+
+### Boolean – store TRUE and FALSE values with the Boolean data type.
+
+```sql
+
+```
+
+### CHAR, VARCHAR and TEXT – learn how to use various character types including CHAR, VARCHAR, and TEXT.
+
+```sql
+
+```
+
+### NUMERIC – show you how to use NUMERIC type to store values that precision is required.
+
+```sql
+
+```
+
+### Integer – introduce you various integer types in PostgreSQL including SMALLINT, INT and BIGINT.
+
+```sql
+
+```
+
+### DATE – introduce the DATE data type for storing date values.
+
+```sql
+
+```
+
+### Timestamp – understand timestamp data types quickly.
+
+```sql
+
+```
+
+### Interval – show you how to use interval data type to handle a period of time effectively.
+
+```sql
+
+```
+
+### TIME – use the TIME datatype to manage the time of day values.
+
+```sql
+
+```
+
+### UUID – guide you on how to use UUID datatype and how to generate UUID values using supplied modules.
+
+```sql
+
+```
+
+### Array – show you how to work with the array and introduces you to some handy functions for array manipulation.
+
+```sql
+
+```
+
+### hstore – introduce you to data type which is a set of key/value pairs stored in a single value in PostgreSQL.
+
+```sql
+
+```
+
+### JSON – illustrate how to work with JSON data type and shows you how to use some of the most important JSON operators and functions.
+
+```sql
+
+```
+
+### User-defined data types – show you how to use the CREATE DOMAIN and CREATE TYPE statements to create user-defined data types.
+
+```sql
+
+```
+
+## Section 15. Conditional Expressions & Operators
+
+```sql
+
+```
+
+### CASE – show you how to form conditional queries with CASE expression.
+
+```sql
+
+```
+
+### COALESCE – return the first non-null argument. You can use it to substitute NULL by a default value.
+
+```sql
+
+```
+
+### NULLIF – return NULL if the first argument equals the second one.
+
+```sql
+
+```
+
+### CAST – convert from one data type into another e.g., from a string into an integer, from a string into a date.
+
+```sql
+
+```
+
+## Section 16. PostgreSQL Utilities
+
+```sql
+
+```
+
+### psql commands – show you the most common psql commands that help you interact with psql faster and more effectively.
+
+```sql
+
+```
+
+## Section 17. PostgreSQL Recipes
+
+```sql
+
+```
+
+### How to compare two tables – describe how to compare data in two tables in a database.
+
+```sql
+
+```
+
+### How to delete duplicate rows in PostgreSQL – show you various ways to delete duplicate rows from a table.
+
+```sql
+
+```
+
+### How to generate a random number in a range – illustrate how to generate a random number in a specific range.
+
+```sql
+
+```
+
+### EXPLAIN statement– guide you on how to use the EXPLAIN statement to return the execution plan of a query.
+
+```sql
+
+```
+
+### PostgreSQL vs. MySQL – compare PostgreSQL with MySQL in terms of functionalities.
+
+```sql
+
+```
