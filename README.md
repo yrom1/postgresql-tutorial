@@ -1522,82 +1522,218 @@ WHERE
     film_id = f_id ;
 $$
 LANGUAGE SQL;
+SELECT * FROM get_film_summary (40); -- returns a table
 ```
 
 ## Section 15. Conditional Expressions & Operators
 
-```sql
-
-```
-
 ### CASE – show you how to form conditional queries with CASE expression.
 
 ```sql
-
+SELECT title,
+       length,
+       CASE
+           WHEN length > 0
+                AND length <= 50 THEN 'Short'
+           WHEN length > 50
+                AND length <= 120 THEN 'Medium'
+           WHEN length > 120 THEN 'Long'
+       END duration
+FROM film
+ORDER BY title;
+SELECT
+	SUM (CASE
+               WHEN rental_rate = 0.99 THEN 1
+	       ELSE 0
+	      END
+	) AS "Economy",
+	SUM (
+		CASE
+		WHEN rental_rate = 2.99 THEN 1
+		ELSE 0
+		END
+	) AS "Mass",
+	SUM (
+		CASE
+		WHEN rental_rate = 4.99 THEN 1
+		ELSE 0
+		END
+	) AS "Premium"
+FROM
+	film;
 ```
 
 ### COALESCE – return the first non-null argument. You can use it to substitute NULL by a default value.
 
 ```sql
-
+-- The COALESCE function accepts an unlimited number of arguments.
+-- It returns the first argument that is not null. If all arguments
+-- are null, the COALESCE function will return null.
+SELECT COALESCE(1, 2); -- 1
+SELECT COALESCE (NULL, 2 , 1); -- 2
+-- SELECT LEFT('abc',1); -> 'a'
+-- We often use the COLAESCE function to substitute a default value
+-- for null values when we querying the data.
+SELECT
+COALESCE (excerpt, LEFT(CONTENT, 150)) -- allows for NULL excerpt
+FROM
+posts;
+INSERT INTO items (product, price, discount)
+VALUES
+('A', 1000 ,10),
+('B', 1500 ,20),
+('C', 800 ,5),
+('D', 500, NULL);
+SELECT
+product,
+(price - COALESCE(discount, 0)) AS net_price
+FROM
+items;
 ```
 
 ### NULLIF – return NULL if the first argument equals the second one.
 
 ```sql
-
+-- The NULLIF function returns a null value if argument_1 equals
+-- to argument_2, otherwise it returns argument_1.
+SELECT NULLIF (1, 1); -- return NULL
+SELECT NULLIF (1, 0); -- return 1
+SELECT NULLIF ('A', 'B'); -- return A
+SELECT
+	(
+		SUM (
+			CASE
+			WHEN gender = 1 THEN
+				1
+			ELSE
+				0
+			END
+		) / NULLIF ( -- prevents divide by zero error
+			SUM (
+				CASE
+				WHEN gender = 2 THEN
+					1
+				ELSE
+					0
+				END
+			),
+			0
+		)
+	) * 100 AS "Male/Female ratio"
+FROM members;
 ```
 
 ### CAST – convert from one data type into another e.g., from a string into an integer, from a string into a date.
 
 ```sql
-
+SELECT CAST('100' AS INTEGER);
+SELECT '100'::INTEGER, '01-OCT-2015'::DATE;
+SELECT CAST ('2015-01-01' AS DATE), CAST ('01-OCT-2015' AS DATE);
+SELECT CAST ('10.2' AS DOUBLE PRECISION); -- 15 decimal digits precision
+SELECT
+   CAST('true' AS BOOLEAN),
+   CAST('false' as BOOLEAN),
+   CAST('T' as BOOLEAN),
+   CAST('F' as BOOLEAN);
+SELECT '2019-06-15 14:30:20'::timestamp;
+SELECT '15 minute'::interval,
+ '2 hour'::interval,
+ '1 day'::interval,
+ '2 week'::interval,
+ '3 month'::interval;
 ```
 
 ## Section 16. PostgreSQL Utilities
 
-```sql
-
-```
-
 ### psql commands – show you the most common psql commands that help you interact with psql faster and more effectively.
 
 ```sql
+psql -d database -U  user -W  -- W is prompt password
+psql -h host -d database -U user -W
+psql -U user -h host "dbname=db sslmode=require"
+\c dbname username
+\l
+\dt
+\d table_name
+\dn -- schemas
+\df
+\dv
+\du
+SELECT version();
+\g -- previous command
+\s -- command history
+\s 'cmd_history.txt' -- save cmd history to filename
+\i 'cmd.txt' -- execute file commands
+\? -- get help
+\h ALTER TABLE -- get help on *commands*
+/*
+dvdrental=# \timing
+Timing is on.
+dvdrental=# select count(*) from film;
+ count
+-------
+  1000
+(1 row)
 
+Time: 1.495 ms
+dvdrental=# \timing
+Timing is off.
+*/
+\e
+\ef cool_function
+\q -- quit gg it's over.
 ```
 
 ## Section 17. PostgreSQL Recipes
 
-```sql
-
-```
-
 ### How to compare two tables – describe how to compare data in two tables in a database.
 
 ```sql
-
+SELECT
+	id,
+	name
+FROM
+	foo
+FULL OUTER JOIN bar USING (id, name)
+WHERE
+	foo.id IS NULL
+OR bar.id IS NULL;
 ```
 
 ### How to delete duplicate rows in PostgreSQL – show you various ways to delete duplicate rows from a table.
 
 ```sql
-
+CREATE TABLE basket(
+    id SERIAL PRIMARY KEY,
+    fruit VARCHAR(50) NOT NULL
+);
+DELETE FROM
+    basket a
+        USING basket b -- delete the matched rows of diff. table
+WHERE
+    a.id < b.id
+    AND a.fruit = b.fruit;
 ```
 
 ### How to generate a random number in a range – illustrate how to generate a random number in a specific range.
 
 ```sql
-
+SELECT floor(random() * (h-l+1) + l)::int;
 ```
 
 ### EXPLAIN statement– guide you on how to use the EXPLAIN statement to return the execution plan of a query.
 
 ```sql
-
+EXPLAIN SELECT * FROM film; -- seq scan
+EXPLAIN SELECT * FROM film WHERE film_id = 100; -- index scan
+                                                -- if film_id has index
+EXPLAIN ANALYZE SELECT COUNT(*) FROM film; -- aggregate -> seq scan
+-- The ANALYZE option causes the sql_statement to be executed first
+-- and then actual run-time statistics in the returned information
 ```
 
 ### PostgreSQL vs. MySQL – compare PostgreSQL with MySQL in terms of functionalities.
 
 ```sql
-
+/* one is an elephant, one is a dolphin XD*/
 ```
