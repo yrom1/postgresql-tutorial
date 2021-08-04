@@ -1737,3 +1737,15 @@ EXPLAIN ANALYZE SELECT COUNT(*) FROM film; -- aggregate -> seq scan
 ```sql
 /* one is an elephant, one is a dolphin XD*/
 ```
+
+# Advanced PostgreSQL Tutorial
+
+## PostgreSQL PL/pgSQL - This PostgreSQL stored procedures section shows you step by step how to develop PostgreSQL user-defined functions using PL/pgSQL procedural language.
+
+## PostgreSQL Triggers - This section provides you with PostgreSQL trigger concept and shows how to manage triggers in PostgreSQL.
+
+## PostgreSQL Views - We will introduce you to the database views concept and show you how to manage views such as create, alter, and remove views from the database.
+
+## PostgreSQL Indexes - PostgreSQL indexes are effective tools to enhance database performance. Indexes help the database server find specific rows much faster than it could do without indexes.
+
+## PostgreSQL Administration - PostgreSQL administration covers the most important activities for PostgreSQL database server including roles and databases management, backup and restore.
