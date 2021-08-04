@@ -1314,6 +1314,10 @@ FROM
 ### Timestamp – understand timestamp data types quickly.
 
 ```sql
+CREATE TABLE timestamp_demo (
+    ts TIMESTAMP,
+    tstz TIMESTAMPTZ
+);
 -- timestamp: a timestamp without timezone.
 -- timestamptz: timestamp with a timezone
 -- timestamtz updates time based on set timezone, timestamp doesnt
@@ -1322,49 +1326,202 @@ INSERT INTO timestamp_demo (ts, tstz)
 VALUES('2016-06-22 19:10:25-07','2016-06-22 19:10:25-07'); -- same
 SELECT timezone('America/New_York','2016-06-01 00:00'::timestamptz);
 -- converts 2016-06-01 00:00 to America/New_York
-
 ```
 
 ### Interval – show you how to use interval data type to handle a period of time effectively.
 
 ```sql
+-- INTERVAL '2 months ago';
+-- INTERVAL '3 hours 20 minutes';
+SELECT
+	now(),
+	now() - INTERVAL '1 year 3 hours 20 minutes'
+             AS "3 hours 20 minutes ago of last year";
+-- P6Y5M4DT3H2M1S
+-- P [ years-months-days ] [ T hours:minutes:seconds ]
+SET intervalstyle = 'sql_standard';
+/*
+sql standard	    +6-5 +4 +3:02:01
+postgres            6 years 5 mons 4 days 03:02:01
+postgres verbose    @ 6 years 5 mons 4 days 3 hours 2 mins 1 sec
+iso_8601            P6Y5M4DT3H2M1S
+*/
+SELECT
+    TO_CHAR(
+        INTERVAL '17h 20m 05s',
+        'HH24:MI:SS' -- 17:20:05
+    );
+SELECT
+    EXTRACT (
+        MINUTE
+        FROM
+            INTERVAL '5 hours 21 minutes'
+    );
 
 ```
 
 ### TIME – use the TIME datatype to manage the time of day values.
 
 ```sql
-
+CREATE TABLE shifts (
+    id serial PRIMARY KEY,
+    shift_name VARCHAR NOT NULL,
+    start_at TIME NOT NULL,
+    end_at TIME NOT NULL
+);
+INSERT INTO shifts(shift_name, start_at, end_at)
+VALUES('Morning', '08:00:00', '12:00:00'),
+      ('Afternoon', '13:00:00', '17:00:00'),
+      ('Night', '18:00:00', '22:00:00');
+SELECT LOCALTIME AT TIME ZONE 'UTC-7';
+SELECT
+    LOCALTIME,
+    EXTRACT (HOUR FROM LOCALTIME) as hour,
+    EXTRACT (MINUTE FROM LOCALTIME) as minute,
+    EXTRACT (SECOND FROM LOCALTIME) as second,
+    EXTRACT (milliseconds FROM LOCALTIME) as milliseconds;
+SELECT time '10:00' - time '02:00' AS result;
+SELECT LOCALTIME + interval '2 hours' AS result;
 ```
 
 ### UUID – guide you on how to use UUID datatype and how to generate UUID values using supplied modules.
 
 ```sql
-
+CREATE EXTENSION IF NOT EXISTS "uuid-ossp";
+SELECT uuid_generate_v1();
+SELECT uuid_generate_v4();
+CREATE TABLE contacts (
+    contact_id uuid DEFAULT uuid_generate_v4 (),
+    phone VARCHAR,
+    PRIMARY KEY (contact_id)
+);
 ```
 
 ### Array – show you how to work with the array and introduces you to some handy functions for array manipulation.
 
 ```sql
-
+CREATE TABLE contacts (
+	id serial PRIMARY KEY,
+	name VARCHAR (100),
+	phones TEXT []
+);
+INSERT INTO contacts (name, phones)
+VALUES('John Doe',ARRAY [ '(408)-589-5846','(408)-589-5555' ]);
+INSERT INTO contacts (name, phones)
+VALUES('Lily Bush','{"(408)-589-5841"}'),
+      ('William Gate','{"(408)-589-5842","(408)-589-58423"}');
+SELECT
+	name
+FROM
+	contacts
+WHERE
+	phones [ 2 ] = '(408)-589-58423';
+UPDATE contacts
+SET phones = '{"(408)-589-5843"}'
+WHERE id = 3;
 ```
 
 ### hstore – introduce you to data type which is a set of key/value pairs stored in a single value in PostgreSQL.
 
 ```sql
-
+CREATE EXTENSION hstore;
+CREATE TABLE books (
+	id serial primary key,
+	title VARCHAR (255),
+	attr hstore
+);
+INSERT INTO books (title, attr)
+VALUES
+	(
+        'PostgreSQL Tutorial',
+        '
+        "paperback" => "243",
+        "publisher" => "postgresqltutorial.com",
+        "language"  => "English",
+        "ISBN-13"   => "978-1449370000",
+        "weight"    => "11.2 ounces"
+        '
+	);
+SELECT
+	attr -> 'ISBN-13' AS isbn
+FROM
+	books;
+UPDATE books
+SET attr = attr || '"freeshipping"=>"yes"' :: hstore;
+UPDATE books
+SET attr = delete(attr, 'freeshipping');
+-- check for key:
+-- attr ? 'publisher';
+-- check for key-value pair:
+-- attr @> '"weight"=>"11.2 ounces"' :: hstore;
+-- query for contains multiple keys:
+-- attr ?& ARRAY [ 'language', 'weight' ];
+SELECT
+	avals (attr),
+	svals (attr),
+    hstore_to_json (attr) json
+FROM
+	books;
 ```
 
 ### JSON – illustrate how to work with JSON data type and shows you how to use some of the most important JSON operators and functions.
 
 ```sql
-
+CREATE TABLE orders (
+	id serial NOT NULL PRIMARY KEY,
+	info json NOT NULL
+);
+INSERT INTO orders (info)
+VALUES('{ "customer": "John Doe", "items": {"product": "Beer","qty": 6}}');
+SELECT info -> 'customer' AS customer
+FROM orders;
+SELECT info ->> 'customer' AS customer,
+	   info -> 'items' ->> 'product' AS product
+FROM orders
+WHERE CAST ( info -> 'items' ->> 'qty' AS INTEGER) = 2
 ```
 
 ### User-defined data types – show you how to use the CREATE DOMAIN and CREATE TYPE statements to create user-defined data types.
 
 ```sql
-
+CREATE TABLE mailing_list (
+    id SERIAL PRIMARY KEY,
+    first_name VARCHAR NOT NULL,
+    last_name VARCHAR NOT NULL,
+    email VARCHAR NOT NULL,
+    CHECK (
+        first_name !~ '\s' -- one tilde is regex, !~ not match
+        AND last_name !~ '\s'
+    )
+);
+CREATE DOMAIN contact_name AS
+   VARCHAR NOT NULL CHECK (value !~ '\s');
+CREATE TABLE mailing_list (
+    id serial PRIMARY KEY,
+    first_name contact_name,
+    last_name contact_name,
+    email VARCHAR NOT NULL
+);
+-- The CREATE TYPE statement allows you to create a composite type,
+-- which can be used as the return type of a function.
+CREATE TYPE film_summary AS (
+    film_id INT,
+    title VARCHAR,
+    release_year SMALLINT
+);
+CREATE OR REPLACE FUNCTION get_film_summary (f_id INT)
+    RETURNS film_summary AS
+$$
+SELECT
+    film_id,
+    title,
+    release_year
+FROM
+    film
+WHERE
+    film_id = f_id ;
+$$
+LANGUAGE SQL;
 ```
 
 ## Section 15. Conditional Expressions & Operators
