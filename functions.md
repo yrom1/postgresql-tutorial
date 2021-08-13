@@ -1,8 +1,13 @@
 # Functions
 
 ## PostgreSQL Aggregate Functions
+```
 AVG() – return the average value.
 COUNT() – return the number of values.
+MAX() – return the maximum value.
+MIN() – return the minimum value.
+SUM() – return the sum of all or distinct values.
+```
 ```sql
 ryan=# SELECT * FROM func;
  val 
@@ -24,9 +29,6 @@ ryan=# SELECT COUNT(val) FROM func;
      2
 (1 row)
 ```
-MAX() – return the maximum value.
-MIN() – return the minimum value.
-SUM() – return the sum of all or distinct values.
 ## PostgreSQL Window Functions
 
 ```sql
