@@ -601,7 +601,7 @@ WHERE length >= ANY(
     GROUP BY  category_id );
 -- The `= ANY` operator is different from NOT IN.
 -- The following expression x <> ANY (a,b,c) is equivalent to:
--- x <> a OR <> b OR x <> c
+-- x <> a OR x <> b OR x <> c
 ```
 
 ### ALL – query data by comparing a value with a list of values returned by a subquery.
