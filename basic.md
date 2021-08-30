@@ -495,6 +495,13 @@ SELECT
     aggregate_function(c3)
 FROM
     table_name
+GROUP BY
+    GROUPING SETS (
+        (c1, c2),
+        (c1),
+        (c2),
+        ()
+);
 SELECT
     brand,
     segment,
